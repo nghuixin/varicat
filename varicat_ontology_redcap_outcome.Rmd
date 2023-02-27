@@ -27,7 +27,7 @@ colnames<- colnames[lapply(colnames, function(x) length(grep("Please|Is.this|Wha
 length(unique(colnames))
 
 # === classify each column name into levels 1, 2 vs. 3 === 
-redcap_output <- gage_bd_redcap_output[colnames]  %>%  select(-head(names(.), 2)) %>% mutate_all(., list(~na_if(.,""))) %>% distinct() 
+redcap_output <- gage_bd_redcap_output[colnames]  %>%  select(-head(names(.), 2)) %>% mutate_if(is.factor, na_if, y = "") %>% distinct() 
 
 length(sort(unique(redcap_output$Domain.Main.category.of.the.variable.))) # there are a total of 20 level1 categories
 
@@ -47,6 +47,6 @@ l1Cols <- c("Type.of.clinical.characteristics.", "Clinical.Trial..Specific..type
 redcap_output %>% dplyr::select(!all_of(l1Cols))  %>% colnames() %>% sort()  # output level2 and level3 categories names
 
 # fill in the two lists below using the variable names in the output above, based on the levels from varicat_ontology.csv
-#l2Cols <- ()
-#l3Cols <- ()
+l2Cols <- c("Comorbidities.type.", "Depressive.Episode.Course.type.", "Drug.class.type.", "ECT.type.", "First.episode.features.type.", "Functioning.type.", "General.Episodic.Features.type.", "Global.type.", "History.of.non.bipolar.diagnosis.type.", "Hypomanic.Episode.Course.type.", "Imaging.type.", "Lab.work.type.", "Lifetime.drug.class.type.", "Manic.Episode.Course.type.", "Medication.adherence.type.", "Mixed.Episode.Course.type.", "Physical.Abuse.type.", "Physical.Measurements.type.", "Psychotic.Episode.Course.type.", "Sexual.Abuse.type.", "Sleep.circadian.rhythms.type.", "Smoking.type.", "Substance.use.type.", "Type.of.current.diagnosis.", "Type.of.history.of.psych.symptom.variables.", "Type.of.hospitalization.variables.", "Type.of.suicidality.variables.")
+l3Cols <- c("Anticonvulsants.Mood.Stabilizers.type.", "Antidepressant.type.", "Antipsychotic.type.", "Global.physical.comorbidity.type.", "Heart.type.","Li.Lithium..type.", "Lifetime.Anticonvulsants.Mood.Stabilizers.type.", "Lifetime.Antidepressant.type.", "Lifetime.Antipsychotic.type.", "Lifetime.Li.Lithium..type.", "Lifetime.Non.psychiatric.medication.type.", "Lifetime.Other.drug.type.", "Lifetime.Polypharmacy.drug.type.", "Lifetime.Sedative.Hypnotics.type.", "Lifetime.Stimulants.type.", "Non.psychiatric.medication.type.", "Other.drug.type.", "Polypharmacy.drug.type.", "Saliva..skin..hair.type.", "Sedative.Hypnotics.type.", "Stimulants.type.", "Vascular.type.")
 ```
