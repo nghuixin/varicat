@@ -20,8 +20,7 @@ data <- data[,c(4,5, 7, 1)] %>% replace_na(list(battery = 'None'))
 names(data) <- c('cognitive_type',	'battery',	'instrumenttype','study')
 df1 <- data %>% group_by(cognitive_type) %>% count(study)  %>% tally()
 names(df1)[2] <- c("num_study")
-
-
+ 
 # num of studies in each battery
 data %>% replace_na(list(battery = 'None'))%>% group_by(battery) %>% count(study)   %>% tally() %>% filter(n>2)
  
@@ -84,9 +83,9 @@ n_study_in_cog_domain #87 is from geri-sad, mostly DRS and MINI MMSE
 ```{r}
 number_ticks <- function(n) {function(limits) pretty(limits, n)}
 
-ggplot(n_study_in_cog_domain, aes(x=reorder(cognitive_type,num_study), y=num_study)) + 
-  geom_bar(stat = "identity") +coord_flip()+theme_classic() +
-  xlab("Cognitive Domain ") + ylab("Number of Studies") + scale_y_continuous(breaks=number_ticks(10))
+ggplot(n_study_in_cog_domain, aes(x=reorder(cognitive_type,num_study), fill=cognitive_type, y=num_study) ) + 
+  geom_bar(stat = "identity",   show.legend = FALSE) +coord_flip()+theme_classic() +
+  xlab("Cognitive Domain ") + ylab("Number of Studies") + scale_y_continuous(breaks=number_ticks(10)) # +  scale_fill_brewer(palette="Paired")
 ```
 # How many instruments are used in more than 2 studies, and which cognitive domains do they belong to?
 ```{r}
@@ -99,10 +98,18 @@ more_than_2_times_instrument
 # Executive Functioning	Trail Making Test Part A	7		
  scaleFUN <- function(x) sprintf("%.0f", x)
 
-freq_more_than_2_times_instrument <- more_than_2_times_instrument%>% ungroup()  %>% select(instrumenttype, n) %>% group_by(instrumenttype) %>% summarize(sum = sum(n))
-ggplot(freq_more_than_2_times_instrument, aes(x=reorder(instrumenttype,  sum), y=sum))+
-  geom_bar(stat='identity')+
-  ylab("Number of Studies") +  coord_flip()+theme_classic()  +  xlab("Cognitive Domain")  +   scale_y_continuous(breaks=number_ticks(10))
+freq_more_than_2_times_instrument <- more_than_2_times_instrument%>% ungroup()  %>% select(instrumenttype, n) %>% group_by(instrumenttype) %>% summarize(sum = sum(n))%>% filter(instrumenttype != "None")
+ggplot(freq_more_than_2_times_instrument, aes(x=reorder(instrumenttype,  sum) #, fill = instrumenttype 
+                                              , y=sum))+
+  geom_bar(stat='identity',   show.legend = FALSE)+
+  ylab("Number of Studies") +  coord_flip()+theme_classic()  +  xlab("Cognitive Domain")  +   scale_y_continuous(breaks=number_ticks(10)) # +  scale_color_brewer(palette="BrBG") 
+
+
+
+freq_more_than_2_times_instrument <- more_than_2_times_instrument%>% ungroup() %>% filter(cognitive_type == "Executive Functioning") %>% select(instrumenttype, n)  %>% group_by(instrumenttype) %>% summarize(sum = sum(n)) %>% filter(instrumenttype != "None")
+ggplot(freq_more_than_2_times_instrument, aes(x=reorder(instrumenttype,  sum)  , y=sum))+
+  geom_bar(stat='identity',   show.legend = FALSE)+
+  ylab("Number of Studies") +  coord_flip()+theme_classic()  +  xlab("Cognitive Domain")  +   scale_y_continuous(breaks=number_ticks(10))  +  scale_color_brewer(palette="BrBG")
 # n refers to number of studies
 ```
 ### What domains have Other or NA as their instruments and have at least >2 studies using Other or NA?

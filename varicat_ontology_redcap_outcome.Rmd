@@ -1,20 +1,27 @@
 ---
 title: "Varicat Ontology Redcap output"
 output: html_notebook
----
-
+--- 
 ```{r}
-library(stringr)  
-library(ggraph) 
-library(igraph)
-library(cli)
-library(dplyr)
-library(tidyverse) 
-library(data.tree) # for making the 'ontology' data structure
-library(rlang)
-library(networkD3) # for making interactive viz
-library(htmltools)
-library(stringr) 
+x <- c("stringr", "ggraph", "igraph", "cli", "dplyr", "plyr", "tidyverse", "data.tree", "rlang", "networkD3", "htmltools", "stringr")
+lapply(x, FUN = function(X) {
+    do.call("require", list(X)) 
+}) 
+
+# ==== Helper functions ====
+ls <- c("type", "of")
+## Construct the regular expression
+pat <- paste0("\\b(", paste0(ls, collapse="|"), ")\\b")     
+
+# Note that "Drug.class.type." refers to "current drug class" and and "Other.drug.type" refers to "Current Other"
+clean_colnames <- function(ls) {
+  ls <-gsub('[^[:alnum:]]', ' ', ls) # replace punctuation as space
+  ls <- tolower(ls) # lowercase
+  ls <-gsub(pat, '', ls) # remove type and of 
+  ls <- trimws(ls) # remove front and back trailing spaces
+  ls <- str_squish(ls) # removes whitespace at the start and end, and replaces all internal whitespace with a single space
+  return (ls)
+}
 
 # ==== data cleaning === 
 gage_bd_redcap_output <- read.csv("gage_bd_redcap_output.csv", sep=",", header=TRUE)
@@ -25,10 +32,10 @@ colnames<- colnames[lapply(colnames, function(x) length(grep("Please|Is.this|Wha
 length(unique(colnames))
 
 # === classify each column name into levels 1, 2 vs. 3 === 
-redcap_output <-  gage_bd_redcap_output[colnames] %>% select(-head(names(.), 2)) %>% mutate_if(is.factor, na_if, y = "") %>% distinct() 
+# redcap_output <-  gage_bd_redcap_output[colnames] %>% select(-head(names(.), 2)) %>% mutate_if(is.factor, na_if, y = "") %>% distinct() 
+ redcap_output <-  gage_bd_redcap_output[colnames] %>% select(-head(names(.), 2)) %>% mutate_all(., na_if, y = "") %>% distinct() 
 
-
-length(sort(unique(redcap_output$Domain.Main.category.of.the.variable.))) # there are a total of 20 level1 categories
+length(sort(unique(redcap_output$Domain.Main.category.of.the.variable.))) # there are a total of 20 level-1 categories
 
 # get the col names of the level 1 categories 
 l1Cols <- c("Type.of.clinical.characteristics.", "Clinical.Trial..Specific..type.", "Cognitive.type.", "Course.of.bipolar.illness.episodes.type.", 
@@ -36,50 +43,49 @@ l1Cols <- c("Type.of.clinical.characteristics.", "Clinical.Trial..Specific..type
            "Current.pharmacological.treatment.type.",  "Type.of.demographics." ,   "Ecological.Momentary.Assessment.type.",  "Family.history.type.",
            "Lifetime.pharmacological.treatment.type.", "Type.of.Metadata.", "Miscellaneous.type." , "Other.non.pharmacological.treatment.type.", 
            "Physical.health.type.",  "Physiological.type.", "Positive.Psychological.Factors.type.", "Trauma.Stress..type.") 
+ 
+l2Cols <- c("Comorbidities.type.", "Depressive.Episode.Course.type.", "Drug.class.type.", "ECT.type.", "First.episode.features.type.", "Functioning.type.", "General.Episodic.Features.type.", "Global.type.", "History.of.non.bipolar.diagnosis.type.", "Hypomanic.Episode.Course.type.", "Imaging.type.", "Lab.work.type.", "Lifetime.drug.class.type.", "Manic.Episode.Course.type.", "Medication.adherence.type.", "Mixed.Episode.Course.type.", "Physical.Abuse.type.", "Physical.Measurements.type.", "Psychotic.Episode.Course.type.", "Sexual.Abuse.type.", "Sleep.circadian.rhythms.type.", "Smoking.type.", "Substance.use.type.", "Type.of.current.diagnosis.", "Type.of.history.of.psych.symptom.variables.", "Type.of.hospitalization.variables.", "Type.of.suicidality.variables.")
+
+l3Cols <- c("Anticonvulsants.Mood.Stabilizers.type.", "Antidepressant.type.", "Antipsychotic.type.", "Global.physical.comorbidity.type.", "Heart.type.","Li.Lithium..type.", "Lifetime.Anticonvulsants.Mood.Stabilizers.type.", "Lifetime.Antidepressant.type.", "Lifetime.Antipsychotic.type.", "Lifetime.Li.Lithium..type.", "Lifetime.Non.psychiatric.medication.type.", "Lifetime.Other.drug.type.", "Lifetime.Polypharmacy.drug.type.", "Lifetime.Sedative.Hypnotics.type.", "Lifetime.Stimulants.type.", "Non.psychiatric.medication.type.", "Other.drug.type.", "Polypharmacy.drug.type.", "Saliva..skin..hair.type.", "Sedative.Hypnotics.type.", "Stimulants.type.", "Vascular.type."   )
+
+colnames(redcap_output) <- clean_colnames(colnames(redcap_output))
+l1Cols <- clean_colnames(l1Cols)
+l2Cols <- clean_colnames(l2Cols)
+l3Cols <- clean_colnames(l3Cols)
+
 l1_df <- cbind(redcap_output[1], redcap_output %>% select(l1Cols))
-groupbyl1 <- cbind(l1_df[1], l2 = do.call(pmax, c(l1_df[-1], na.rm = TRUE))) %>% distinct()   # collapse all level2 vars into one column (l2) and remove duplicate rows
+groupbyl1 <- cbind(l1_df[1], l2 = do.call(pmax, c(l1_df[-1], na.rm = TRUE))) #%>% distinct()   # collapse all level2 vars into one column (l2) and remove duplicate rows then group by the main domain 
+
+l2_df <- cbind(redcap_output[1], redcap_output %>% select(l2Cols))
+groupbyl2 <- cbind(l2_df[1], l3 = do.call(pmax, c(l2_df[-1], na.rm = TRUE))) #%>% distinct() 
+
+redcap_output$l2 <- groupbyl1$l2
+redcap_output$l3 <-groupbyl2$l3
+
+colnames(redcap_output)[1] <- c("l1")  
+ 
+df <- redcap_output %>% relocate(l2, .after="l2") %>% relocate(l3, .after="l2") %>%  dplyr::select(!c(l1Cols, l2Cols, l3Cols)) %>% distinct() %>% arrange(l1, l2)
+
+l2_rows_no_NAs <- df %>%
+  filter(!(is.na(l3))) %>% dplyr::select(l2) %>% distinct() 
+
+df_no_NA_l3 <- match_df(df, l2_rows_no_NAs,on = NULL) %>% filter(!is.na(l3)) %>% arrange(l1) # df with no NAs in l3
+
+df_l2_with_no_l3 <- setdiff(df, match_df(df, l2_rows_no_NAs,on = NULL)) %>% filter(!is.na(l2)) # original df - df with no NA in l3 and remove any rows with NA in l2
+
+rbind(df_l2_with_no_l3, df_no_NA_l3) %>% arrange(l1,l2,l3) %>% distinct() 
+
+
 
 ```
 
-```{r}
-# get col names of the level 2 categories
-redcap_output %>% dplyr::select(!all_of(l1Cols))  %>% colnames() %>% sort()  # output level2 and level3 categories names
-
-# also check through the l2 column of this data frame and classify them based on the csv file. 
-groupbyl1 %>% arrange(Domain.Main.category.of.the.variable., l2)
  
+
+```{r}
 # fill in the two lists below using the variable names in the output above, based on the levels from varicat_ontology.csv
-l2Cols <- c("Comorbidities.type.", "Depressive.Episode.Course.type.", "Drug.class.type.", "ECT.type.", "First.episode.features.type.", "Functioning.type.", "General.Episodic.Features.type.", "Global.type.", "History.of.non.bipolar.diagnosis.type.", "Hypomanic.Episode.Course.type.", "Imaging.type.", "Lab.work.type.", "Lifetime.drug.class.type.", "Manic.Episode.Course.type.", "Medication.adherence.type.", "Mixed.Episode.Course.type.", "Physical.Abuse.type.", "Physical.Measurements.type.", "Psychotic.Episode.Course.type.", "Sexual.Abuse.type.", "Sleep.circadian.rhythms.type.", "Smoking.type.", "Substance.use.type.", "Type.of.current.diagnosis.", "Type.of.history.of.psych.symptom.variables.", "Type.of.hospitalization.variables.", "Type.of.suicidality.variables.", "Subject identifier", "Visit (baseline, follow-up, etc)", "Age at enrollment", "Sex / Gender / Gender Identity", "Race", "Ethnicity / cultural group", "Relationship status", "Living situation", "Education", "Occupational status", "Language spoken", "Current diagnosis", "Age at onset (indicate 'onset of what?' in description)", "Depressive episode course", "Manic episode course", "Age at first psychiatric treatment", "History of ECT", "Psychiatric disorders/Mental illness", "Smoking", "Substance Use", "Physical Measurements", "Visual-Motor Ability", "Memory and Learning", "Verbal Ability", "Executive Functioning", "Processing speed", "Global", "Emotional Intelligence", "Depression symptoms", "Mania symptoms", "Functioning", "Decision Making", "Social Intelligence / Perception", "Overall symptom severity", "Comorbidities", "Anxiety symptoms", "Fatigue associated with depression", "Sleep/circadian rhythms", "Psychotic symptoms", "Age at visit", "Veteran status", "Socioeconomic status / class", "Attention/Vigilance", "Stress", "Reproductive Health", "Lab work", "Nutrition / Eating", "Drug class", "Medication adherence", "Suicidality symptoms", "Duration of euthymia", "Hospitalizations", "Suicidality", "Age at onset of depression symptoms", "Mixed episode course", "Hypomanic episode course", "Age at onset of mixed symptoms", "General episodic features", "Age at onset of hypomania symptoms", "Duration of illness (indicate in variable description how)", "History of psychotic symptoms", "Impulsivity", "Apathy", "Physical Activity", "Life Satisfaction", "Resilience", "Happiness", "Subjective cognitive performance", "Empathy / Compassion", "Social support", "Optimism", "Insurance coverage", "Mobile self-report of activities", "Mobile self-report of sleep", "Mobile mood / affect ratings", "Adverse effects", "Substance or alcohol abuse/dependence", "First episode features", "Motor Ability", "Psychosocial / therapy", "History of non-bipolar diagnosis", "Any children/ number of children", "Country of origin", "Physical abuse", "Sexual abuse", "Psychotic episode course", "Age at onset of mania symptoms", "Suicide")
-
-            
-l3Cols <- c("Anticonvulsants.Mood.Stabilizers.type.", "Antidepressant.type.", "Antipsychotic.type.", "Global.physical.comorbidity.type.", "Heart.type.","Li.Lithium..type.", "Lifetime.Anticonvulsants.Mood.Stabilizers.type.", "Lifetime.Antidepressant.type.", "Lifetime.Antipsychotic.type.", "Lifetime.Li.Lithium..type.", "Lifetime.Non.psychiatric.medication.type.", "Lifetime.Other.drug.type.", "Lifetime.Polypharmacy.drug.type.", "Lifetime.Sedative.Hypnotics.type.", "Lifetime.Stimulants.type.", "Non.psychiatric.medication.type.", "Other.drug.type.", "Polypharmacy.drug.type.", "Saliva..skin..hair.type.", "Sedative.Hypnotics.type.", "Stimulants.type.", "Vascular.type.", "Other")
+# l2Cols <- c("Comorbidities.type.", "Depressive.Episode.Course.type.", "Drug.class.type.", "ECT.type.", "First.episode.features.type.", "Functioning.type.", "General.Episodic.Features.type.", "Global.type.", "History.of.non.bipolar.diagnosis.type.", "Hypomanic.Episode.Course.type.", "Imaging.type.", "Lab.work.type.", "Lifetime.drug.class.type.", "Manic.Episode.Course.type.", "Medication.adherence.type.", "Mixed.Episode.Course.type.", "Physical.Abuse.type.", "Physical.Measurements.type.", "Psychotic.Episode.Course.type.", "Sexual.Abuse.type.", "Sleep.circadian.rhythms.type.", "Smoking.type.", "Substance.use.type.", "Type.of.current.diagnosis.", "Type.of.history.of.psych.symptom.variables.", "Type.of.hospitalization.variables.", "Type.of.suicidality.variables.", "Subject identifier", "Visit (baseline, follow-up, etc)", "Age at enrollment", "Sex / Gender / Gender Identity", "Race", "Ethnicity / cultural group", "Relationship status", "Living situation", "Education", "Occupational status", "Language spoken", "Current diagnosis", "Age at onset (indicate 'onset of what?' in description)", "Depressive episode course", "Manic episode course", "Age at first psychiatric treatment", "History of ECT", "Psychiatric disorders/Mental illness", "Smoking", "Substance Use", "Physical Measurements", "Visual-Motor Ability", "Memory and Learning", "Verbal Ability", "Executive Functioning", "Processing speed", "Global", "Emotional Intelligence", "Depression symptoms", "Mania symptoms", "Functioning", "Decision Making", "Social Intelligence / Perception", "Overall symptom severity", "Comorbidities", "Anxiety symptoms", "Fatigue associated with depression", "Sleep/circadian rhythms", "Psychotic symptoms", "Age at visit", "Veteran status", "Socioeconomic status / class", "Attention/Vigilance", "Stress", "Reproductive Health", "Lab work", "Nutrition / Eating", "Drug class", "Medication adherence", "Suicidality symptoms", "Duration of euthymia", "Hospitalizations", "Suicidality", "Age at onset of depression symptoms", "Mixed episode course", "Hypomanic episode course", "Age at onset of mixed symptoms", "General episodic features", "Age at onset of hypomania symptoms", "Duration of illness (indicate in variable description how)", "History of psychotic symptoms", "Impulsivity", "Apathy", "Physical Activity", "Life Satisfaction", "Resilience", "Happiness", "Subjective cognitive performance", "Empathy / Compassion", "Social support", "Optimism", "Insurance coverage", "Mobile self-report of activities", "Mobile self-report of sleep", "Mobile mood / affect ratings", "Adverse effects", "Substance or alcohol abuse/dependence", "First episode features", "Motor Ability", "Psychosocial / therapy", "History of non-bipolar diagnosis", "Any children/ number of children", "Country of origin", "Physical abuse", "Sexual abuse", "Psychotic episode course", "Age at onset of mania symptoms", "Suicide")
+ 
 
 ```
  
-#### Strip dots and and edit the output 
-```{r}
-
-ls <- c("type", "of")
-## Construct the regular expression
-pat <- paste0("\\b(", paste0(ls, collapse="|"), ")\\b")    
- 
-  
-
-# Note that "Drug.class.type." refers to "current drug class" and and "Other.drug.type" refers to "Current Other"
-clean_colnames <- function(ls) {
-  ls <-gsub('[^[:alnum:]]', ' ', ls)
-
-ls <- tolower(ls)
-  ls <-gsub(pat, '', ls)
-  ls <- trimws(ls)
-    ls <- str_squish(ls)  
-  return (ls)
-}
-
-clean_colnames(l1Cols)
-clean_colnames(l2Cols)
-clean_colnames(l3Cols)
-
-
-```
  
