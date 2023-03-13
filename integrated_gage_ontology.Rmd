@@ -57,7 +57,7 @@ paste5 <- function(..., sep = " ", collapse = NULL, na.rm = F) {
 ```{r}
 integrated_gage_varicat <- read.csv("integrated_gage_varicat.csv", sep=",", header=TRUE) 
 # inflam <- read.csv("inflammaging_varicat.csv", sep=",", header=TRUE)
- integrated_gage_varicat <-  inflam 
+# integrated_gage_varicat <-  inflam 
  
 colnames <- colnames(integrated_gage_varicat) 
  
