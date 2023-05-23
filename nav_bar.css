@@ -1,21 +1,15 @@
-nav {
-    border-bottom: 1px solid black;
+.topnav ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
 }
 
-.topnav ol {
-    list-style-type: none;
-    padding-left: 0;
+.topnav li {
+  float: left;
 }
 
-.topnav {
-    display: inline-block;
-}
-
-.topnav a::after {
-    display: inline-block;
-    color: #000;
-    content: '|';
-    font-size: 80%;
-    font-weight: bold;
-    padding: 0 3px;
+.topnav a {
+  display: block;
+  padding: 8px;
+  background-color: #dddddd;
 }
