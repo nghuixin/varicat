@@ -8,7 +8,7 @@ output: html_document
 
 ### Basic data cleaning functions and helper functions
 ```{r, echo=FALSE, message= FALSE}
-x <- c("stringr", "ggraph", "igraph", "cli", "dplyr", "plyr", "tidyverse", "data.tree", "rlang", "networkD3", "htmltools", "stringr", "webshot")
+x <- c("stringr", "ggraph", "igraph", "cli", "dplyr", "plyr", "tidyverse", "data.tree", "rlang", "networkD3", "htmltools", "stringr", "webshot", "htmlwidgets")
 lapply(x, FUN = function(X) {
     do.call("require", list(X)) 
 }) 
@@ -55,31 +55,47 @@ paste5 <- function(..., sep = " ", collapse = NULL, na.rm = F) {
 ```
 ### Read dataset (CHOOSE INFLAMMAGING OR INTEGRATED)
 ```{r}
+# Read the data from the "integrated_gage_varicat.csv" file into a data frame
 integrated_gage_varicat <- read.csv("integrated_gage_varicat.csv", sep=",", header=TRUE) 
 
+### === Uncomment the two lines below to create the clusters for the inflam dataset === 
 
-# Uncomment the two lines below to create the clusters for inflam dataset
+# Read the data from the "inflammaging_varicat.csv" file into a data frame
+# Assign the contents of the "inflam" data frame to the "integrated_gage_varicat" data frame
+
 inflam <- read.csv("inflammaging_varicat.csv", sep=",", header=TRUE)
-integrated_gage_varicat <-  inflam 
+integrated_gage_varicat <- inflam
 ```
-### remove unnescessary info 
+
+### Remove unnescessary info 
 ```{r}
-colnames <- colnames(integrated_gage_varicat) 
- 
-# converting the result to dataframe
-integrated_gage_varicat <- as.data.frame(integrated_gage_varicat) %>% mutate_all(., list(~na_if(.,""))) 
-# NOTE: look up: regex and lapply
-colnames<- colnames[lapply(colnames, function(x) length(grep("Please|Is.this|What|Was.|Do.we|How.many.|Variables.this|General.notes|Complete" ,x,value=FALSE))) == 0] # remove sublevels that are too
+# Get column names of integrated_gage_varicat
+colnames <- colnames(integrated_gage_varicat)
+
+# Convert integrated_gage_varicat to a data frame and replace empty values with NA
+integrated_gage_varicat <- as.data.frame(integrated_gage_varicat) %>% mutate_all(., list(~na_if(.,"")))
+
+# Remove column names containing specific patterns using regular expressions (regex) and lapply
+colnames <- colnames[lapply(colnames, function(x) length(grep("Please|Is.this|What|Was.|Do.we|How.many.|Variables.this|General.notes|Complete", x, value = FALSE))) == 0]
+
+# Count the number of unique column names after removing the unwanted patterns
 length(unique(colnames)) #75
 
-# === classify each column name into levels 1, 2 vs. 3 ===  
- integrated_gage_varicat <-  integrated_gage_varicat[colnames] %>% select(-head(names(.), 2)) %>% mutate_all(., na_if, y = "") %>% distinct() 
- 
-integrated_gage_varicat <- as.data.frame(apply(integrated_gage_varicat,2, str_trim))   # remove trailing spaces
-# subset(rev_df,duplicated(level3)) #check if there are duplicats in lvl 3 except for NAs
+# Classify each column name into levels 1, 2, or 3
+integrated_gage_varicat <- integrated_gage_varicat[colnames] %>% 
+  select(-head(names(.), 2)) %>% 
+  mutate_all(., na_if, y = "") %>% 
+  distinct()
 
+# Remove trailing spaces from the values in integrated_gage_varicat
+integrated_gage_varicat <- as.data.frame(apply(integrated_gage_varicat, 2, str_trim))
+
+# Clean column names using the clean_colnames function
 colnames(integrated_gage_varicat) <- clean_colnames(colnames(integrated_gage_varicat))
-integrated_gage_varicat <- integrated_gage_varicat[,4:ncol(integrated_gage_varicat)]  
+
+# Remove the first three columns and keep the remaining columns in integrated_gage_varicat
+integrated_gage_varicat <- integrated_gage_varicat[, 4:ncol(integrated_gage_varicat)]
+ 
  
 ```
 # Classify columns in the dataset into Main Domain, Sub-Domain and Sub-sub domain
@@ -95,86 +111,138 @@ l2Cols <- c("Comorbidities.type.", "Depressive.Episode.Course.type.", "Drug.clas
 
 l3Cols <- c("Anticonvulsants.Mood.Stabilizers.type.", "Antidepressant.type.", "Antipsychotic.type.", "Global.physical.comorbidity.type.", "Heart.type.","Li.Lithium..type.", "Lifetime.Anticonvulsants.Mood.Stabilizers.type.", "Lifetime.Antidepressant.type.", "Lifetime.Antipsychotic.type.", "Lifetime.Li.Lithium..type.", "Lifetime.Non.psychiatric.medication.type.", "Lifetime.Other.drug.type.", "Lifetime.Polypharmacy.drug.type.", "Lifetime.Sedative.Hypnotics.type.", "Lifetime.Stimulants.type.", "Non.psychiatric.medication.type.", "Other.drug.type.", "Polypharmacy.drug.type.", "Saliva..skin..hair.type.", "Sedative.Hypnotics.type.", "Stimulants.type.", "Vascular.type."   )
 
+# Clean the column names using the clean_colnames function
 l1Cols <- clean_colnames(l1Cols)
 l2Cols <- clean_colnames(l2Cols)
 l3Cols <- clean_colnames(l3Cols)
 
-### === 
+# Create a new data frame for level 1 categories by selecting the relevant columns from integrated_gage_varicat
 l1_df <- cbind(integrated_gage_varicat[1], integrated_gage_varicat %>% select(l1Cols))
-groupbyl1 <- cbind(l1_df[1], l2 = do.call(pmax, c(l1_df[-1], na.rm = TRUE))) #%>% distinct()   # collapse all level2 vars into one column (l2) and remove duplicate rows then group by the main domain  
+
+# Collapse all level 2 variables into one column (l2) and remove duplicate rows, then group by the main domain
+groupbyl1 <- cbind(l1_df[1], l2 = do.call(pmax, c(l1_df[-1], na.rm = TRUE))) #%>% distinct()
+
+# Create a new data frame for level 2 categories by selecting the relevant columns from integrated_gage_varicat
 l2_df <- cbind(integrated_gage_varicat[1], integrated_gage_varicat %>% select(l2Cols))
-groupbyl2 <- cbind(l2_df[1], l3 = do.call(pmax, c(l2_df[-1], na.rm = TRUE))) #%>% distinct() 
-colnames(integrated_gage_varicat)[colnames(integrated_gage_varicat) == "drug class"] ="current drug class"
+
+# Collapse all level 3 variables into one column (l3) and remove duplicate rows, then group by the level 2 domain
+groupbyl2 <- cbind(l2_df[1], l3 = do.call(pmax, c(l2_df[-1], na.rm = TRUE))) #%>% distinct()
+
+# Rename the column "drug class" to "current drug class" in integrated_gage_varicat
+colnames(integrated_gage_varicat)[colnames(integrated_gage_varicat) == "drug class"] = "current drug class"
+
 ```
 
 ```{r}
-# add l2 and l3 columns to the original df. Now we collapse the multiple columns which have many NAs in their rows into one column based on whether they are l2 or l3
+# Add l2 and l3 columns to the original dataframe. Collapse multiple columns with many NAs into one column based on whether they are l2 or l3.
 integrated_gage_varicat$l2 <- groupbyl1$l2
-integrated_gage_varicat$l3 <-groupbyl2$l3
-colnames(integrated_gage_varicat)[1] <- c("l1")  
-# integrated_gage_varicat %>% arrange(l1)
-df <- integrated_gage_varicat %>% relocate(l2, .after="l2") %>% relocate(l3, .after="l2") %>%  dplyr::select(l1,l2,l3)  %>% arrange(l1, l2, l3)
-df <- df %>%  mutate(l2 = case_when(l2 == "Drug class" ~ "Current drug class" , 
-                                    
-                                    TRUE ~ l2))
+integrated_gage_varicat$l3 <- groupbyl2$l3
 
-df_n <- df %>% group_by(l2, l3) %>% dplyr::mutate(n = n())   %>% arrange(l1, l2, l3)%>% distinct() 
-df_n  <- df_n  %>% dplyr::mutate(l2 = (ifelse(l2 == "Other", paste(l1, l2), l2)), 
-                                 l3 = (ifelse(l3 == "Other", paste(l2, l3), l3)), 
-                                 l1 = (ifelse(l1 == l2, paste(l1, "Domain"), l1))) %>% mutate(l3 = str_replace_all(l3, "/", "_"), 
-                                                                           l2 = str_replace_all(l2, "/", "_"), 
-                                                                           l1 = str_replace_all(l1, "/", "_"))   %>% mutate(l3 = str_replace_all(l3, " ", "_"), 
-                                                                           l2 = str_replace_all(l2, " ", "_"), 
-                                                                           l1 = str_replace_all(l1, " ", "_"))
+# Rename the first column of integrated_gage_varicat to "l1"
+colnames(integrated_gage_varicat)[1] <- c("l1")
+
+# Reorder the columns in the dataframe: l2, l3, l1
+df <- integrated_gage_varicat %>% relocate(l2, .after = "l2") %>% relocate(l3, .after = "l2") %>% dplyr::select(l1, l2, l3) %>% arrange(l1, l2, l3)
+
+# Modify the values in the "l2" column
+df <- df %>% mutate(l2 = case_when(l2 == "Drug class" ~ "Current drug class", TRUE ~ l2))
+
+# Group the dataframe by l2 and l3, and add a new column "n" indicating the count of rows for each group
+df_n <- df %>% group_by(l2, l3) %>% dplyr::mutate(n = n()) %>% arrange(l1, l2, l3) %>% distinct()
+
+# Modify the values in the "l2", "l3", and "l1" columns
+df_n <- df_n %>% dplyr::mutate(l2 = ifelse(l2 == "Other", paste(l1, l2), l2),
+                               l3 = ifelse(l3 == "Other", paste(l2, l3), l3),
+                               l1 = ifelse(l1 == l2, paste(l1, "Domain"), l1)) %>% 
+         mutate(l3 = str_replace_all(l3, "/", "_"),
+                l2 = str_replace_all(l2, "/", "_"),
+                l1 = str_replace_all(l1, "/", "_")) %>% 
+         mutate(l3 = str_replace_all(l3, " ", "_"),
+                l2 = str_replace_all(l2, " ", "_"),
+                l1 = str_replace_all(l1, " ", "_"))
+
+# Add a new column "l0" indicating the top-level variable
 df_n$l0 <- rep("Var", dim(df_n)[1])
-df_n$pathString <- paste5(df_n$l0, 
-                            df_n$l1, 
-                            df_n$l2, 
-                            df_n$l3,
-                            sep = "/", na.rm=TRUE )  
-grp <- df_n %>% group_by(l1) 
-ls_dfs <- group_split(grp)   
+
+# Create a new column "pathString" by concatenating l0, l1, l2, and l3 with "/" as the separator
+df_n$pathString <- paste5(df_n$l0, df_n$l1, df_n$l2, df_n$l3, sep = "/", na.rm = TRUE)
+
+# Group the dataframe by l1
+grp <- df_n %>% group_by(l1)
+
+# Split the dataframe into a list of dataframes based on the groups defined by l1
+ls_dfs <- group_split(grp)
+ 
 ```
 ### create function that takes in a data frame for visualization
 ```{r}
+
+# Defines a function named create_fn that takes a parameter df_n
 create_fn <- function(df_n)  {
-  df_ontology <- as.Node(df_n) # create data.tree, 102 rows
+  # Converts the input dataframe df_n into a data.tree object called df_ontology
+  df_ontology <- as.Node(df_n) 
   
   # https://rdrr.io/cran/data.tree/man/as.igraph.Node.html data.tree --> igraph keep vertex size info
-  #print(df_ontology, "n")
-  # convert data.tree to igraph obj
+   # Converts the df_ontology data.tree object into an igraph object called df_g, removing any vertices named "Var".
   df_g <- as.igraph(df_ontology, direction = "climb")  %>% delete_vertices("Var")  #%>%  delete_edges( c(1:10))  - can be used to delete vertices with string NA
    
+  
+  # Creates a temporary dataframe df_temp by arranging and manipulating columns of df_n.
   df_temp<- df_n %>% 
       arrange(l1, l2) %>% 
-      mutate(l1_id = (factor(l1)))  # factorize
+      mutate(l1_id = (factor(l1)))  
   
   ### Combine level 2 and level 3 variables into one single column 
+  # df "a" groups columns by l3 categories
   a <- cbind(df_n[2:3], name = do.call(pmax, c(df_n[4], na.rm = TRUE))) %>% na.omit()  %>% ungroup() %>% dplyr::select(l3, name)   
   colnames(a) <- c("name", "n") 
+  
+  # df "a" groups columns by l2 categories
   b <- cbind(df_n[2:3], name = do.call(pmax, c(df_n[4], na.rm = TRUE)))%>% filter(is.na(l3)) %>% ungroup() %>% dplyr::select(l2, name)
   colnames(b) <- c("name", "n")
-  df_combined_level_2_3 <- rbind(a, b)
   
-  df_temp <- bind_rows(df_temp[c("l1", "l1_id")], df_temp[c( "l2" ,"l1_id")], df_temp[c("l3","l1_id")]) # create new df grouped by the domain
+  # Combines dataframes a and b row-wise
+df_combined_level_2_3 <- rbind(a, b)
+  
+  # Binds rows of df_temp with selected columns to create a new dataframe.
+df_temp <- bind_rows(df_temp[c("l1", "l1_id")], df_temp[c( "l2" ,"l1_id")], df_temp[c("l3","l1_id")]) 
+
+# Creates a dataframe membership_custom by combining specific columns of df_temp and renaming the column
   membership_custom <- cbind(df_temp[2], name = do.call(pmax, c(df_temp[-2], na.rm = TRUE))) %>% distinct() %>% drop_na()  %>% arrange(name) # group l2 and l3 variables under l1
+  
+  # Converts the df_g igraph object to a networkD3 object called df_d3
   df_d3 <- igraph_to_networkD3(df_g) # convert igraph obj to networkd3 obj
   
+  # Merges the membership_custom dataframe with the df_d3$nodes dataframe based on the "name" column.
   membership_custom <-  merge(df_d3$nodes, membership_custom, on= "name") # merge node df and the new df grouped by domain to get desired color groupings
-  df_d3$nodes <-  membership_custom[match(df_d3$nodes$name, membership_custom$name),] # order vars according to the data.tree obj's original order
+  
+  # Reorders the rows of df_d3$nodes based on matching the "name" column with the merged membership_custom.
+  df_d3$nodes <-  membership_custom[match(df_d3$nodes$name, membership_custom$name),]
+  
+  #  Stores the row names of df_d3$nodes in the rnames variable.
   rnames <- rownames(df_d3$nodes)
+  
+  # Adds a new column "idx" to df_d3$nodes containing the integer representation of row names.
   df_d3$nodes$idx <- as.integer(rownames(df_d3$nodes))
   
+  # Joins df_d3$nodes with df_combined_level_2_3 based on the "name" column, replacing any NA values with 0.
   join_df_combined_l2_l3_n <- full_join( df_d3$nodes, df_combined_level_2_3, on = "name")  %>% replace(is.na(.), 0)
-  df_d3$nodes <- merge(df_d3$nodes, join_df_combined_l2_l3_n, by=c("name", "l1_id", "idx"), all.x = TRUE)# %>% dplyr::select()
   
-  df_d3$nodes <- df_d3$nodes[as.integer(rnames), ] # order the rows by the original index number order
   
+  # Merges df_d3$nodes with join_df_combined_l2_l3_n based on multiple columns ("name", "l1_id", "idx"), keeping all rows from df_d3$nodes.
+  df_d3$nodes <- merge(df_d3$nodes, join_df_combined_l2_l3_n, by=c("name", "l1_id", "idx"), all.x = TRUE) 
+  
+  # : Reorders the rows of df_d3$nodes based on the original index number order stored in rnames.
+  df_d3$nodes <- df_d3$nodes[as.integer(rnames), ]  
+  
+  # Creates a new vector add_n_if_sub_domain by appending ": " and the value of the "n" column to df_d3$nodes$name if the name is not in the "l1_id" column of df_d3$nodes, otherwise keeps the original name.
   add_n_if_sub_domain <- ifelse(!df_d3$nodes$name %in% df_d3$nodes$l1_id , paste0(df_d3$nodes$name, ": ", df_d3$nodes$n), df_d3$nodes$name)
   
+  # Updates the "name" column of df_d3$nodes with the values from add_n_if_sub_domain, effectively modifying the names of nodes if they meet the specified condition.
   df_d3$nodes <- df_d3$nodes%>% mutate(name = add_n_if_sub_domain)
       
-# make a grouping variable that will match to colours
+  # make a grouping variable that will match to colors within each domain (see my_color variable below)
+  # if it is main category label, assign val to "main" otherwise, assign val to "[domain_name]_sub"
  df_d3$nodes <- df_d3$nodes %>%
  mutate(color_group = case_when(
     name %in% c("Clinical_characteristics",
@@ -201,10 +269,10 @@ create_fn <- function(df_n)  {
   return(df_d3)  
 }
 
-for (i in ls_dfs)    {
-  print(unique(i$l1))
-  print(sum(i$n))
-}
+# for (i in ls_dfs)    {
+#   print(unique(i$l1))
+#   print(sum(i$n))
+# }
 
   
 ``` 
@@ -216,12 +284,12 @@ for (i in ls_dfs)    {
 c("#7FC07F" , "#BEAED4" ,"darkgreen" ,"#C90B20", "violet" ,
  "#F0027F" ,"#BF5B20" ,"#666666" ,"#1B0E77" ,"#D95F00" ,
 "#7570B3" ,"#E7290A", "#66A61E" ,"#E6AA00" ,"#A6761D" ,
-"#666666" ,"#A6CED3", "darkmagenta"  ,"#FB9A99",  "turquoise" )
+"#fff733" ,"#A6CED3", "darkmagenta"  ,"#FB9A99",  "turquoise" )
  
    
 my_color <- 'd3.scaleOrdinal()
   .domain([
-  "Clinical_characteristics_sub", "Cognitive_sub",  "Course_of_bipolar_illness-episodes", "Course_of_bipolar_illness-symptoms_sub", "Course_of_non-bipolar_psychiatric_illness_sub", "Current_illness_severity_sub"   , "Current_pharmacological_treatment_sub", "Demographics_sub", "Ecological_Momentary_Assessment_sub"  , "Family_history_sub"  , "Lifetime_pharmacological_treatment_sub", "Metadata_sub"  ,  "Trauma_stress_sub"  ,  "Physical_health_sub", "Physiological_sub" ,  "Positive_psychological_factors_sub_sub", "Clinical_Trial-specific_sub_sub", "Course_of_treatment_sub",     "Non-pharmacological_treatment_sub", "Miscellaneous_Domain_sub", "main"
+   "Clinical_characteristics_sub", "Cognitive_sub",  "Course_of_bipolar_illness-episodes_sub", "Course_of_bipolar_illness-symptoms_sub", "Course_of_non-bipolar_psychiatric_illness_sub", "Current_illness_severity_sub"   , "Current_pharmacological_treatment_sub", "Demographics_sub", "Ecological_Momentary_Assessment_sub"  , "Family_history_sub"  , "Lifetime_pharmacological_treatment_sub", "Metadata_sub"  ,  "Trauma_stress_sub"  ,  "Physical_health_sub", "Physiological_sub" ,  "Positive_psychological_factors_sub", "Clinical_Trial-specific_sub", "Course_of_treatment_sub",     "Non-pharmacological_treatment_sub", "Miscellaneous_Domain_sub", "main"
   ])
   .range([
      "#7FC07F",  
@@ -239,21 +307,30 @@ my_color <- 'd3.scaleOrdinal()
     "#66A61E",
     "#E6AA00",
     "#A6761D",
-    "#666666",
+    "#fff733",
     "#A6CED3",
     "darkmagenta",
     "#FB9A99",
     "turquoise",
     "black" 
   ])' 
-  
 
-### === DEFINE FUNCTION TO CREATE FORCE NETWORK /D3 object === 
+### === DEFINE FUNCTION TO CREATE FORCE NETWORK/D3 object === 
 visualizeDomainNetwork <- function(df_n ,folder_and_filename_prefix) {
     viz_name <- unique(df_n$l1)
     df_d3 <- create_fn(df_n)
 
 
+# Links = df_d3$links: Specifies the links or connections between nodes in the network. The value is taken from the links column of the df_d3 object.
+# Nodes = df_d3$nodes: Specifies the nodes in the network. The value is taken from the nodes column of the df_d3 object.
+# Source = 'source', Target = 'target': Specifies the columns in the links dataframe that contain the source and target node IDs for each link.
+# NodeID = 'name': Specifies the column in the nodes dataframe that contains the unique identifier for each node.
+# Group = 'color_group': Specifies the column in the nodes dataframe that contains the group or color information for each node.
+# opacity = 0.9: Sets the opacity level of the network visualization.
+# zoom = TRUE: Enables zooming functionality in the network plot.
+# linkDistance = 20: Sets the desired link distance between connected nodes.
+# charge = -40: Specifies the node repulsion strength, influencing the layout of the network.
+# Nodesize = "n": Specifies the column in the nodes dataframe that contains the node size information.
 
 fn <- forceNetwork(Links = df_d3$links, Nodes = df_d3$nodes ,
              Source = 'source', Target = 'target', NodeID = 'name',  Group = 'color_group', # get NodeID and Group from inflam_d3$node
@@ -352,22 +429,6 @@ for(i in 1:num_dfs) {
 }   
  
 ```
- 
- 
- 
-### === ARCHIVED ===
-### Decide on a color for each of the 20 Domains
-```{r}
-# Create networkD3 obj
-df_d3 <- create_fn(df_n)  
-
-# fn <- forceNetwork(Links = df_d3$links, Nodes = df_d3$nodes   ,colourScale  = my_color, 
-#              Source = 'source', Target = 'target', NodeID = 'name',  Group = 'l1_id', # get NodeID and Group from inflam_d3$node
-#             opacity = 0.9,  zoom = TRUE, legend = TRUE, linkDistance = 10,  
-#              charge = -25,   # node repulsion   
-#             Nodesize  = "n" , 
-#          fontSize = 20, fontFamily = "Calibri" )
-# fn  %>% saveNetwork("integrated_gage_test.html")
-```
+  
 
  

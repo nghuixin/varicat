@@ -1,0 +1,255 @@
+---
+title: "Varicat Ontology Viz"
+output: html_notebook
+---
+```{r, message = FALSE}
+#install.packages("igraph") 
+#install.packages("ggraph") 
+
+# http://curleylab.psych.columbia.edu/netviz/netviz2.html#/20  
+```
+
+```{r, message=FALSE}
+library(ggraph) 
+library(igraph)
+library(cli)
+library(dplyr)
+library(tidyverse) 
+library(data.tree) # for making the 'ontology' data structure
+library(rlang)
+library(networkD3) # for making interactive viz
+library(htmltools)
+library(stringr)  
+library(webshot)
+```
+
+```{r, message=FALSE}
+# https://stackoverflow.com/questions/13673894/suppress-nas-in-paste
+# function to remove NAs and change to ""
+paste5 <- function(..., sep = " ", collapse = NULL, na.rm = F) {
+  if (na.rm == F)
+    paste(..., sep = sep, collapse = collapse)
+  else
+    if (na.rm == T) {
+      paste.na <- function(x, sep) {
+        x <- gsub("^\\s+|\\s+$", "", x)
+        ret <- paste(na.omit(x), collapse = sep)
+        is.na(ret) <- ret == ""
+        return(ret)
+      }
+      df <- data.frame(..., stringsAsFactors = F)
+      ret <- apply(df, 1, FUN = function(x) paste.na(x, sep))
+      if (is.null(collapse))
+        ret
+      else {
+        paste.na(ret, sep = collapse)
+      }
+    }
+} 
+```
+ 
+## Read Ontology file with all varicat vars
+```{r}
+varicat_ontology <- read.csv("varicat_ontology_full_names.csv", sep=",", header=TRUE)
+# reverse order (only relevant for dendogram)
+rev_df <- apply(varicat_ontology, 2, rev) # r
+ 
+# converting the result to dataframe
+rev_df <- as.data.frame(rev_df) %>% mutate_all(., list(~na_if(.,"")))
+rev_df <- as.data.frame(apply(rev_df,2, str_trim)) %>% arrange(level1) # remove trailing spaces
+# subset(rev_df,duplicated(level3)) #check if there are duplicats in lvl 3 except for NAs
+
+
+(unique(varicat_ontology$level1) )# 20
+#sort(unique(varicat_ontology$level2) )# 103
+#unique(varicat_ontology$level3)
+```
+
+### Make ontology with data.tree
+```{r}
+rev_df <- rev_df %>% dplyr::mutate(level2 = (ifelse(level2 == "Other", paste(level1, level2), level2)), 
+                                 level3 = (ifelse(level3 == "Other", paste(level2, level3), level3)), 
+                                 level1 = (ifelse(level1 == level2, paste(level1, "Domain"), level1))) %>% mutate(level3 = str_replace_all(level3, "/", "_"), 
+                                                                           level2 = str_replace_all(level2, "/", "_"), 
+                                                                           level1 = str_replace_all(level1, "/", "_"))   %>% mutate(level3 = 
+                                                                                                                              
+                                                                          str_replace_all(level3, " ", "_"), 
+                                                                           level2 = str_replace_all(level2, " ", "_"), 
+                                                                           level1 = str_replace_all(level1, " ", "_"))
+
+
+
+# create pathString to make the data tree@
+rev_df$pathString <- paste5(rev_df$level0, 
+                            rev_df$level1, 
+                            rev_df$level2, 
+                            rev_df$level3,
+                            sep = "/", na.rm=TRUE
+                            )  
+   
+
+grp <- rev_df %>% group_by(level1) 
+ls_dfs <- group_split(grp)  
+``` 
+
+### Visualize ontology with ForceNetwork
+```{r}
+
+create_fn<- function(rev_df){
+  ontology <- as.Node(rev_df, na.rm=TRUE) # create data.tree obj
+  g <- as.igraph(ontology, direction = "climb")  %>% delete_vertices("Variable")  #%>%  delete_edges( c(1:10))  - can be used to delete vertices with string NA
+  unique(rev_df$level1)
+  
+  code_temp <- rev_df %>% 
+    arrange(level1, level2) %>% 
+    mutate(l1_id = (factor(level1))) # factor the domain name to show it as legend names and color vars by the domain it belongs to
+  
+  code_temp <- bind_rows(code_temp[c(2, 6)], code_temp[c( 3 ,6)], code_temp[c(4,6)]) # create new df grouped by the domain
+  membership_custom <- cbind(code_temp[2], name = do.call(pmax, c(code_temp[-2], na.rm = TRUE))) %>% distinct() %>% drop_na()  %>% arrange(name) 
+  
+  d3 <- igraph_to_networkD3(g)  # convert igraph obj to networkd3 obj for viz
+  membership_custom <-  merge(d3$nodes, membership_custom, on= "name") # merge node df and the new df grouped by domain to get desired color groupings
+  d3$nodes <-  membership_custom[match(d3$nodes$name, membership_custom$name),] # order vars according to the data.tree obj's original order
+  
+  # make a grouping variable that will match to colours
+ d3$nodes <- d3$nodes %>%
+ mutate(color_group = case_when(
+    name %in% c("Clinical_characteristics",
+    "Cognitive",
+    "Clinical_Trial-specific",
+    "Course_of_treatment",
+    "Course_of_bipolar_illness-episodes",
+    "Course_of_bipolar_illness-symptoms",
+    "Course_of_non-bipolar_psychiatric_illness",
+    "Current_illness_severity",
+    "Current_pharmacological_treatment",
+    "Demographics",
+    "Ecological_Momentary_Assessment",
+    "Family_history",
+    "Lifetime_pharmacological_treatment",
+    "Metadata",
+    "Trauma_stress",
+    "Physical_health",
+    "Non-pharmacological_treatment",
+    "Physiological",
+    'Miscellaneous_Domain',
+    "Positive_psychological_factors") ~ "main",
+     TRUE ~ paste0(l1_id, "_sub")
+  ))
+   return(d3)
+}
+
+visualizeDomainNetwork <- function(df) {
+
+   
+my_color <- 'd3.scaleOrdinal()
+  .domain([
+   "Clinical_characteristics_sub", "Cognitive_sub",  "Course_of_bipolar_illness-episodes_sub", "Course_of_bipolar_illness-symptoms_sub", "Course_of_non-bipolar_psychiatric_illness_sub", "Current_illness_severity_sub"   , "Current_pharmacological_treatment_sub", "Demographics_sub", "Ecological_Momentary_Assessment_sub"  , "Family_history_sub"  , "Lifetime_pharmacological_treatment_sub", "Metadata_sub"  ,  "Trauma_stress_sub"  ,  "Physical_health_sub", "Physiological_sub" ,  "Positive_psychological_factors_sub", "Clinical_Trial-specific_sub", "Course_of_treatment_sub",     "Non-pharmacological_treatment_sub", "Miscellaneous_Domain_sub", "main"
+  ])
+  .range([
+     "#7FC07F",  
+    "#BEAED4",
+    "darkgreen",
+    "#C90B20",
+    "violet",
+    "#F0027F",
+    "#BF5B20",
+    "#666666",
+    "#1B0E77",
+    "#D95F00",
+    "#7570B3",
+    "#E7290A",
+    "#66A61E",
+    "#E6AA00",
+    "#A6761D",
+    "#fff733",
+    "#A6CED3",
+    "darkmagenta",
+    "#FB9A99",
+    "turquoise",
+    "black" 
+  ])' 
+
+  viz_name <- unique(df$level1)
+  d3 <- create_fn(df) # d3 contains two dfs, d3$nodes and d3$links
+  
+# create visualization by taking in the df from d3
+fn <- forceNetwork(Links = d3$links, Nodes = d3$nodes ,
+             Source = 'source', Target = 'target', NodeID = 'name',  Group = 'color_group', # get node id and group from d3$node
+            opacity = 1,  zoom = TRUE,  linkDistance = 0.0001 , radiusCalculation = 0.01,   #legend = TRUE,
+             charge = -70,   # node repulsion 
+             fontSize = 20, fontFamily = "Calibri" , colourScale = my_color)
+
+
+### === CHANGE FILE AND FOLDER NAME === 
+filename = paste0("full_ontology/",viz_name,".html")
+jpegname = paste0( "full_ontology/", viz_name,".jpeg")
+             
+clickjs <- "function(el, x) {
+  var options = x.options; // Store the options passed from R
+
+  // Select the SVG element
+  var svg = d3.select(el).select('svg');
+
+  // Select all nodes and links in the SVG
+  var node = svg.selectAll('.node');
+  var link = svg.selectAll('link');
+
+  // Store the mouseout event listener for nodes
+  var mouseout = d3.selectAll('.node').on('mouseout');
+
+  // Function to calculate the node size based on options
+  function nodeSize(d) {
+    if (options.nodesize) {
+      return eval(options.radiusCalculation);
+    } else {
+      return 6;
+    }
+  }
+
+  // Add click event listener to all nodes
+  d3.selectAll('.node').on('click', onclick);
+
+  // Function to handle node click events
+  function onclick(d) {
+    if (d3.select(this).on('mouseout') == mouseout) {
+      // If node is not clicked, assign mouseout_clicked event listener
+      d3.select(this).on('mouseout', mouseout_clicked);
+    } else {
+      // If node is clicked, assign regular mouseout event listener
+      d3.select(this).on('mouseout', mouseout);
+    }
+  }
+
+  // Function to handle mouseout event for clicked nodes
+  function mouseout_clicked(d) {
+    // Reset opacity of nodes and links
+    node.style('opacity', +options.opacity);
+    link.style('opacity', +options.opacity);
+
+    // Transition the node circle to its original size
+    d3.select(this).select('circle').transition()
+      .duration(750)
+      .attr('r', function(d) { return nodeSize(d); });
+
+    // Transition the node text to its original position and font size
+    d3.select(this).select('text').transition()
+      .duration(1250)
+      .attr('x', 0)
+      .style('font', options.fontSize + 'px ');
+  }
+}"
+
+ 
+htmlwidgets::onRender(fn, clickjs) %>%  saveNetwork(filename) 
+
+webshot(filename, jpegname, vwidth = 400, vheight = 400, zoom = 0.8) 
+
+}
+
+ 
+for(i in 11:length(ls_dfs)-1) {
+ visualizeDomainNetwork(ls_dfs[[i]] )
+}
+```
+ 

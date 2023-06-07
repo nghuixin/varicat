@@ -1,0 +1,206 @@
+level0,level1,level2,level3
+Variable,Metadata,Subject identifier,
+Variable,Metadata,Metadata Other,
+Variable,Metadata,"Visit (baseline, follow-up, etc)",
+Variable,Demographics,Age at enrollment,
+Variable,Demographics,Age at visit,
+Variable,Demographics,Sex / Gender / Gender Identity,
+Variable,Demographics,Race,
+Variable,Demographics,Ethnicity / cultural group,
+Variable,Demographics,Country of origin,
+Variable,Demographics,Language spoken,
+Variable,Demographics,Relationship status,
+Variable,Demographics,Occupational status,
+Variable,Demographics,Any children/ number of children,
+Variable,Demographics,Veteran status,
+Variable,Demographics,Education,
+Variable,Demographics,Maternal Education,
+Variable,Demographics,Maternal Occupation,
+Variable,Demographics,Paternal Education,
+Variable,Demographics,Paternal Occupation,
+Variable,Demographics,Socioeconomic status / class,
+Variable,Demographics,Insurance coverage,
+Variable,Clinical characteristics,Current diagnosis,"Diagnostic group (e.g., Bipolar vs other psychiatric diagnosis or HC)"
+Variable,Clinical characteristics,Current diagnosis,Bipolar subtype (Bipolar 1 or 2 or NOS)
+Variable,Clinical characteristics,Current diagnosis,BD diagnostic code
+Variable,Clinical characteristics,Current diagnosis,BD diagnosis description
+Variable,Clinical characteristics,Current diagnosis,Rapid-cycling
+Variable,Clinical characteristics,Current diagnosis,"Current episode type (e.g., manic/depressed/euthymic/mixed/remitted)"
+Variable,Clinical characteristics,Current diagnosis,Most recent affective episode type
+Variable,Clinical characteristics,Current diagnosis,First episode?
+Variable,Clinical characteristics,Current diagnosis,Current substance or alcohol abuse/dependence diagnosis
+Variable,Clinical characteristics,Current diagnosis,Current non-bipolar diagnosis/psychiatric comorbidity
+Variable,Clinical characteristics,Current diagnosis,Other diagnostic specifiers
+Variable,Clinical characteristics,Current inpatient vs outpatient status,
+Variable,Current illness severity,Depression symptoms,
+Variable,Current illness severity,Mania symptoms,
+Variable,Current illness severity,Psychotic symptoms,
+Variable,Current illness severity,Anxiety symptoms,
+Variable,Current illness severity,Suicidality symptoms,
+Variable,Current illness severity,Overall symptom severity,
+Variable,Current illness severity,Fatigue associated with depression,
+Variable,Current illness severity,Impulsivity,
+Variable,Current illness severity,Apathy,
+Variable,Current illness severity,Substance Use,Current consumption of alcohol
+Variable,Current illness severity,Substance Use,Current use of illegal drugs
+Variable,Current illness severity,Functioning,Rated by others
+Variable,Current illness severity,Functioning,Self-rated
+Variable,Current pharmacological treatment,Current Drug Class,Current Antipsychotics
+Variable,Current pharmacological treatment,Current Drug Class,Current Anticonvulsants & Mood Stabilizers
+Variable,Current pharmacological treatment,Current Drug Class,Current Antidepressants
+Variable,Current pharmacological treatment,Current Drug Class,Current Sedative-Hypnotics
+Variable,Current pharmacological treatment,Current Drug Class,Current Lithium
+Variable,Current pharmacological treatment,Current Drug Class,Current Stimulants 
+Variable,Current pharmacological treatment,Current Drug Class,Current Other
+Variable,Current pharmacological treatment,Current Drug Class,Current Polypharmacy
+Variable,Current pharmacological treatment,Current Drug Class,Current Non-Psychiatric Medications
+Variable,Current pharmacological treatment,Current Drug Class,Current Total psychiatric medications (count)
+Variable,Current pharmacological treatment,Current Drug Class,Current Total psychiatric medication burden (dose)
+Variable,Current pharmacological treatment,Current Drug Class,Current Total medications (count)
+Variable,Current pharmacological treatment,Current Drug Class,Current Total medication burden (dose)
+Variable,Current pharmacological treatment,Medication adherence,Current adherence to personal & study regime
+Variable,Current pharmacological treatment,Medication adherence,Side effects
+Variable,Current pharmacological treatment,Medication adherence,Treatment satisfaction
+Variable,Lifetime pharmacological treatment,Lifetime Drug Class,Lifetime Antipsychotics
+Variable,Lifetime pharmacological treatment,Lifetime Drug Class,Lifetime Anticonvulsants & Mood Stabilizers
+Variable,Lifetime pharmacological treatment,Lifetime Drug Class,Lifetime Antidepressants
+Variable,Lifetime pharmacological treatment,Lifetime Drug Class,Lifetime Sedative-Hypnotics
+Variable,Lifetime pharmacological treatment,Lifetime Drug Class,Lifetime Lithium
+Variable,Lifetime pharmacological treatment,Lifetime Drug Class,Lifetime Stimulants
+Variable,Lifetime pharmacological treatment,Lifetime Drug Class,Lifetime Other
+Variable,Lifetime pharmacological treatment,Lifetime Drug Class,Lifetime Polypharmacy
+Variable,Lifetime pharmacological treatment,Lifetime Drug Class,Lifetime Non-Psychiatric Medications
+Variable,Lifetime pharmacological treatment,Lifetime Drug Class,Lifetime psychiatric medications (count)
+Variable,Lifetime pharmacological treatment,Lifetime Drug Class,Lifetime psychiatric medication burden (dose)
+Variable,Lifetime pharmacological treatment,Lifetime Drug Class,Lifetime psychiatric medication burden (dose)
+Variable,Lifetime pharmacological treatment,Lifetime Drug Class,Lifetime psychiatric medication burden (dose)
+Variable,Non-pharmacological treatment,ECT,Lifetime psychiatric medication burden (dose)
+Variable,Non-pharmacological treatment,ECT,Lifetime psychiatric medication burden (dose)
+Variable,Non-pharmacological treatment,ECT,Lifetime psychiatric medication burden (dose)
+Variable,Non-pharmacological treatment,Psychosocial & therapy,
+Variable,Physical health,Comorbidities,Heart
+Variable,Physical health,Comorbidities,Vascular
+Variable,Physical health,Comorbidities,Hematopoietic
+Variable,Physical health,Comorbidities,Respiratory
+Variable,Physical health,Comorbidities,Eyes/ears/ nose/ throat/ and larynx
+Variable,Physical health,Comorbidities,Upper GI
+Variable,Physical health,Comorbidities,Lower GI
+Variable,Physical health,Comorbidities,Liver/pancreas/ and biliary
+Variable,Physical health,Comorbidities,Renal
+Variable,Physical health,Comorbidities,Genitourinary
+Variable,Physical health,Comorbidities,Musculoskeletal and skin
+Variable,Physical health,Comorbidities,Neurologic
+Variable,Physical health,Comorbidities,Endocrine & breast
+Variable,Physical health,Comorbidities,Global physical comorbidity score
+Variable,Physical health,Reproductive Health,
+Variable,Physical health,Smoking,Type of smoking 
+Variable,Physical health,Smoking,Number of cigarettes per day
+Variable,Physical health,Smoking,yrs smoking
+Variable,Physical health,Smoking,History of smoking
+Variable,Physical health,Smoking,Nicotine dependence severity
+Variable,Physical health,Physical Measurements,Blood pressure
+Variable,Physical health,Physical Measurements,Body mass index
+Variable,Physical health,Physical Measurements,Height
+Variable,Physical health,Physical Measurements,Weight
+Variable,Physical health,Sleep/circadian rhythms,Sleep
+Variable,Physical health,Sleep/circadian rhythms,Morningness & eveningness
+Variable,Physical health,Physical Activity,
+Variable,Physical health,Nutrition & Eating,
+Variable,Physical health,Lab work,Blood Based Markers
+Variable,Physical health,Lab work,"Saliva, Skin, Hair"
+Variable,Cognitive,Global,Dementia & MCI based on screening
+Variable,Cognitive,Global,Global/screening score
+Variable,Cognitive,Executive Functioning,
+Variable,Cognitive,Procssing speed,
+Variable,Cognitive,Verbal Ability,
+Variable,Cognitive,Memory & Learning,
+Variable,Cognitive,Visual-Motor Ability,
+Variable,Cognitive,Attention/Vigilence,
+Variable,Cognitive,Decision Making,
+Variable,Cognitive,Emotional Intelligence,
+Variable,Cognitive,Social Intelligence / Perception,
+Variable,Cognitive,Motor Ability,
+Variable,Cognitive,Subjective cognitive performance,
+Variable,Physiological,Imaging,Structural MRI
+Variable,Physiological,Imaging,Functional MRI
+Variable,Physiological,Imaging,PET
+Variable,Physiological,Startle,
+Variable,Course of bipolar illness-symptoms,Age at onset (indicate 'onset of what?' in description),
+Variable,Course of bipolar illness-symptoms,Age at onset of mania symptoms,
+Variable,Course of bipolar illness-symptoms,Age at onset of depression symptoms,
+Variable,Course of bipolar illness-symptoms,Age at onset of hypomania symptoms,
+Variable,Course of bipolar illness-symptoms,Age at onset of mixed symptoms,
+Variable,Course of bipolar illness-symptoms,Duration of illness  ,
+Variable,Course of bipolar illness-symptoms,Duration of euthymia,
+Variable,Course of bipolar illness-symptoms,Hospitalizations,Ever been hospitalized 
+Variable,Course of bipolar illness-symptoms,Hospitalizations,Number of psychiatric hospitalizations
+Variable,Course of bipolar illness-symptoms,Hospitalizations,Age at first hospitalization
+Variable,Course of bipolar illness-symptoms,Hospitalizations,Number of substance use hospitalizations
+Variable,Course of bipolar illness-symptoms,Suicidality,Age at first suicide attempt
+Variable,Course of bipolar illness-symptoms,Suicidality,History of suicide attempt
+Variable,Course of bipolar illness-symptoms,Suicidality,Number of suicide attempts
+Variable,Course of bipolar illness-symptoms,Suicidality,Attempted suicide methods
+Variable,Course of bipolar illness-symptoms,Suicidality,Time since last attempt
+Variable,Course of bipolar illness-symptoms,Suicidality,History of suicidal ideation
+Variable,Course of bipolar illness-symptoms,History of psychotic symptoms,History of psychotic features
+Variable,Course of bipolar illness-symptoms,History of psychotic symptoms,History of delusions
+Variable,Course of bipolar illness-symptoms,History of psychotic symptoms,History of Hallucinations
+Variable,Course of bipolar illness-symptoms,History of psychotic symptoms,History of negative symptoms
+Variable,Course of bipolar illness-episodes,First episode features,Psychotic features at first eps
+Variable,Course of bipolar illness-episodes,First episode features,First eps polarity
+Variable,Course of bipolar illness-episodes,First episode features,Significant life event at first eps
+Variable,Course of bipolar illness-episodes,Psychotic episode course,Number of psychotic eps
+Variable,Course of bipolar illness-episodes,Psychotic episode course,Age at first psychotic eps
+Variable,Course of bipolar illness-episodes,Psychotic episode course,Age at last psychotic eps
+Variable,Course of bipolar illness-episodes,Depressive episode course,Number of depressive eps
+Variable,Course of bipolar illness-episodes,Depressive episode course,Age of first depressive eps
+Variable,Course of bipolar illness-episodes,Depressive episode course,Age at last depressive eps
+Variable,Course of bipolar illness-episodes,Depressive episode course,History of psychotic depression
+Variable,Course of bipolar illness-episodes,Depressive episode course,History of depression with atypical symptoms
+Variable,Course of bipolar illness-episodes,Manic episode course,Number of manic eps
+Variable,Course of bipolar illness-episodes,Manic episode course,Age at first manic eps
+Variable,Course of bipolar illness-episodes,Manic episode course,Age at last manic eps
+Variable,Course of bipolar illness-episodes,Hypomanic episode course,History of medication induced mania & hypomania eps
+Variable,Course of bipolar illness-episodes,Hypomanic episode course,Number of hypomanic eps
+Variable,Course of bipolar illness-episodes,Hypomanic episode course,Age at first hypomanic eps
+Variable,Course of bipolar illness-episodes,Hypomanic episode course,Age at last hypomanic eps
+Variable,Course of bipolar illness-episodes,Mixed episode course,Number of mixed eps
+Variable,Course of bipolar illness-episodes,Mixed episode course,Age at first mixed eps
+Variable,Course of bipolar illness-episodes,Mixed episode course,Age at last mixed episode
+Variable,Course of bipolar illness-episodes,General episodic features,Total Number of affective episode (life)
+Variable,Course of bipolar illness-episodes,General episodic features,Length of yrs between 1st & 2nd affective eps
+Variable,Course of bipolar illness-episodes,General episodic features,Seasonality
+Variable,Course of bipolar illness-episodes,General episodic features,Lifetime rapid cycling
+Variable,Course of bipolar illness-episodes,General episodic features,Catatonia
+Variable,Course of bipolar illness-episodes,General episodic features,Melancholia
+Variable,Course of bipolar illness-episodes,General episodic features,History of postpartum eps
+Variable,Course of non-bipolar psychiatric illness,History of non-BD diagnosis,Affective disorder
+Variable,Course of non-bipolar psychiatric illness,History of non-BD diagnosis,Anxiety disorder
+Variable,Course of non-bipolar psychiatric illness,History of non-BD diagnosis,Substance abuse & dependence
+Variable,Course of treatment,Age at first psychiatric treatment,
+Variable,Course of treatment,Age at first lithium use,
+Variable,Course of treatment,History of ECT,
+Variable,Course of treatment,Treatment-resistant,
+Variable,Trauma stress,Physical abuse,Current & Recent physical abuse
+Variable,Trauma stress,Physical abuse,Lifetime physical abuse
+Variable,Trauma stress,Sexual abuse,Current & Recent sexual abuse
+Variable,Trauma stress,Sexual abuse,Lifetime sexual abuse
+Variable,Trauma stress,Stress,
+Variable,Positive psychological factors,Social support,
+Variable,Positive psychological factors,Resilience,
+Variable,Positive psychological factors,Happiness,
+Variable,Positive psychological factors,Optimism,
+Variable,Positive psychological factors,Empathy / Compassion,
+Variable,Positive psychological factors,Life Satisfaction,
+Variable,Ecological Momentary Assessment,Mobile mood / affect ratings,
+Variable,Ecological Momentary Assessment,Mobile self-report of sleep,
+Variable,Ecological Momentary Assessment,Mobile self-report of activities,
+Variable,Family history,Psychiatric disorders & Mental illness,
+Variable,Family history,Suicide,
+Variable,Family history,Substance & alcohol abuse & dependence,
+Variable,Clinical Trial-specific,Randomization group,
+Variable,Clinical Trial-specific,Clinician guess as to study drug & placebo,
+Variable,Clinical Trial-specific,Participant guess as to study drug &  placebo,
+Variable,Clinical Trial-specific,Adverse effects,
+Variable,Clinical Trial-specific,Reason for terminating study,
+Variable,Miscellaneous,,
