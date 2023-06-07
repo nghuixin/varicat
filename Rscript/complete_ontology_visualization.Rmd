@@ -1,26 +1,15 @@
 ---
 title: "Varicat Ontology Viz"
 output: html_notebook
----
-```{r, message = FALSE}
-#install.packages("igraph") 
-#install.packages("ggraph") 
+--- 
+Use this script to create the html files to visualize the complete ontology. 
 
-# http://curleylab.psych.columbia.edu/netviz/netviz2.html#/20  
-```
-
+ 
 ```{r, message=FALSE}
-library(ggraph) 
-library(igraph)
-library(cli)
-library(dplyr)
-library(tidyverse) 
-library(data.tree) # for making the 'ontology' data structure
-library(rlang)
-library(networkD3) # for making interactive viz
-library(htmltools)
-library(stringr)  
-library(webshot)
+x <- c("stringr", "ggraph", "igraph", "cli", "dplyr", "plyr", "tidyverse", "data.tree", "rlang", "networkD3", "htmltools", "stringr", "webshot", "htmlwidgets")
+lapply(x, FUN = function(X) {
+    do.call("require", list(X)) 
+}) 
 ```
 
 ```{r, message=FALSE}

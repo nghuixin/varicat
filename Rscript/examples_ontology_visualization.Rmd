@@ -1,10 +1,10 @@
 ---
-title: "Varicat Ontology Integrated Dataset and Inflammaging Dataset Ontology - Individual Pages"
+title: "Integrated GAGE and Inflammaging Ontology Visualizations"
 author: "Hui Xin Ng"
 date: "2023-03-03"
 output: html_document
 ---
-
+Use this script to create the html files to visualize the two example datasets, inflammaging and integrated GAGE. 
 
 ### Basic data cleaning functions and helper functions
 ```{r, echo=FALSE, message= FALSE}
